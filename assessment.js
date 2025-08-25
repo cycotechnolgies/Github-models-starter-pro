@@ -54,3 +54,74 @@
 // Example:
 // User: "How do I create a function in JavaScript?"
 // Bot: "You can create a function using the `function` keyword or as an arrow function. Here's an example: ..."
+
+
+/**
+ * MULTI-TURN CODING ASSISTANT CHATBOT
+ */
+
+import OpenAI from "openai";
+import dotenv from "dotenv";
+import readline from "readline";
+
+dotenv.config();
+
+// Initialize API client with GitHub’s AI inference endpoint
+const token = process.env.GITHUB_TOKEN;
+const endpoint = "https://models.github.ai/inference";
+const Ai_model = "openai/gpt-4o";
+
+const client = new OpenAI({
+  apiKey: token,
+  baseURL: endpoint,
+});
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+let conversation = [
+  {
+    role: "system",
+    content:
+      "You are a helpful coding assistant. Help across multiple programming languages.",
+  },
+];
+
+export async function codeAssistent() {
+  async function chatLoop() {
+    rl.question("You: ", async (input) => {
+      if (input.trim().toLowerCase() === "exit") {
+        rl.close();
+        return;
+      }
+
+      // push user message into conversation
+      conversation.push({ role: "user", content: input });
+
+      try {
+        const response = await client.chat.completions.create({
+          model: Ai_model,
+          messages: conversation,
+        });
+
+        const reply = response.choices[0].message.content;
+        console.log("Assistant:", reply);
+
+
+        conversation.push({ role: "assistant", content: reply });
+      } catch (error) {
+        console.error("Error while fetching response:", error);
+      }
+
+      chatLoop();
+    });
+  }
+
+  chatLoop();
+}
+
+codeAssistent().catch((err) => {
+  console.error("The CHATBOT encountered an error:", err);
+});
