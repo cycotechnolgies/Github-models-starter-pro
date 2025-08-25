@@ -68,8 +68,8 @@ dotenv.config();
 
 // Initialize API client with GitHub’s AI inference endpoint
 const token = process.env.GITHUB_TOKEN;
-const endpoint = "https://models.inference.ai.azure.com";
-const Ai_model = "gpt-4o";
+const endpoint = "https://models.github.ai/inference";
+const Ai_model = "openai/gpt-4o";
 
 const client = new OpenAI({
   apiKey: token,
@@ -101,17 +101,15 @@ export async function codeAssistent() {
       conversation.push({ role: "user", content: input });
 
       try {
-        // ✅ Correct property: "messages"
         const response = await client.chat.completions.create({
           model: Ai_model,
           messages: conversation,
         });
 
-        // ✅ Correct access: choices[0].message.content
         const reply = response.choices[0].message.content;
         console.log("Assistant:", reply);
 
-        // push assistant reply into conversation
+
         conversation.push({ role: "assistant", content: reply });
       } catch (error) {
         console.error("Error while fetching response:", error);
